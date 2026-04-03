@@ -1,6 +1,7 @@
+import Image from "next/image"; // ADDED: Next.js Image component for performance
 import Link from "next/link";
 import { Heart, MapPin, Bed, Bath, Square, ArrowRight } from "lucide-react";
-import PropertyFilters from "../src/components/PropertyFilters"; // Naya Component Import Kiya
+import PropertyFilters from "../src/components/PropertyFilters"; // ADDED: Filter component for the homepage
 
 // Dummy data for visualizing the grid
 const properties = [
@@ -74,33 +75,42 @@ export default function Home() {
         {/* 3. Hero Cards / Property Grid Section */}
         <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {properties.map((property) => (
-            <div key={property.id} className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+            // ADDED: 'relative' to the main wrapper so the absolute Link works correctly
+            <div key={property.id} className="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
               
+              {/* THE MAGIC LINK: This invisible link stretches over the entire card */}
+              <Link href={`/property/${property.id}`} className="absolute inset-0 z-10 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-2xl">
+                <span className="sr-only">View {property.title} details</span>
+              </Link>
+
               <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-200">
-                <img
+                {/* FIXED: Replaced <img> with Next.js <Image> for massive performance boost */}
+                <Image
                   src={property.image}
                   alt={property.title}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 
+                {/* ADDED: z-20 so the heart button is strictly ABOVE the invisible link and can be clicked */}
                 <button 
-                  className="absolute right-3 top-3 z-10 rounded-full bg-white/90 p-2 text-gray-400 shadow-sm backdrop-blur-sm transition-colors hover:text-red-500 hover:bg-white focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="absolute right-3 top-3 z-20 rounded-full bg-white/90 p-2 text-gray-400 shadow-sm backdrop-blur-sm transition-colors hover:text-red-500 hover:bg-white focus:outline-none focus:ring-2 focus:ring-red-500"
                   aria-label="Add to wishlist"
                 >
                   <Heart className="h-5 w-5" />
                 </button>
                 
-                <div className="absolute bottom-3 left-3 rounded-lg bg-white/95 px-3 py-1.5 text-sm font-bold text-gray-900 shadow-sm backdrop-blur-md">
+                {/* ADDED: z-20 to keep the badge visible on top */}
+                <div className="absolute bottom-3 left-3 z-20 rounded-lg bg-white/95 px-3 py-1.5 text-sm font-bold text-gray-900 shadow-sm backdrop-blur-md pointer-events-none">
                   {property.price}
                 </div>
               </div>
 
-              <div className="flex flex-col flex-grow p-5">
-                <Link href={`/property/${property.id}`} className="block focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md">
-                  <h3 className="line-clamp-1 text-lg font-bold text-gray-900 transition-colors group-hover:text-blue-600">
-                    {property.title}
-                  </h3>
-                </Link>
+              <div className="flex flex-col flex-grow p-5 pointer-events-none">
+                <h3 className="line-clamp-1 text-lg font-bold text-gray-900 transition-colors group-hover:text-blue-600">
+                  {property.title}
+                </h3>
                 
                 <div className="mt-1.5 flex items-center gap-1.5 text-sm text-gray-500">
                   <MapPin className="h-4 w-4 flex-shrink-0 text-gray-400" />
@@ -126,9 +136,9 @@ export default function Home() {
                       <span className="font-medium">{property.sqft}</span>
                     </div>
                   </div>
-                  <Link href={`/property/${property.id}`} className="text-blue-600 opacity-0 transition-opacity group-hover:opacity-100">
+                  <div className="text-blue-600 opacity-0 transition-opacity group-hover:opacity-100">
                      <ArrowRight className="h-5 w-5" />
-                  </Link>
+                  </div>
                 </div>
               </div>
               
